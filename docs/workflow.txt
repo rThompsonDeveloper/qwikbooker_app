@@ -1,0 +1,177 @@
+QwikBooker - Full Authentication & Role-Based Workflow
+
+🌐 Public Access Behavior
+
+Route: /
+
+Behavior:
+
+If the user is not authenticated, check for the presence of a /[business-name] segment:
+
+❌ If no business-name is present: show message:
+
+"To access your booking portal, please use your unique business link. Example: app.qwikbooker.com/lawncare"
+
+✅ If a business-name is present:
+
+Show the login form
+
+Dynamically check if the business has multiple store locations
+
+✅ If multiple: show a store selection dropdown in the login form
+
+❌ If single store: do not show store selection
+
+🔐 Authentication Flow
+
+Login Behavior:
+
+On submit, send login credentials + selected store (if applicable)
+
+If login fails: show validation or credential error
+
+If login succeeds:
+
+Determine user role:
+
+✅ Business Admin: redirect to /dashboard
+
+✅ Store Staff: redirect to /[business-name]/[store-name]/dashboard
+
+🧠 Authenticated Behavior
+
+All users:
+
+JWT or session must validate before showing protected routes
+
+If token/session invalid: redirect to /[business-name] login
+
+👤 Role Permissions Breakdown
+
+🧑‍💼 Business Admin (Full Access)
+
+Can edit:
+
+Business name
+
+Logo and profile info
+
+Company-wide scheduling rules
+
+Can manage:
+
+All stores (create, delete, update)
+
+All staff (create, assign to store, change roles)
+
+Payment setup + integration (Stripe)
+
+Company-wide analytics
+
+Their own store's calendar, bookings, and availability (if a solo operator or first-time setup)
+
+✅ If they are a solo provider (e.g., hair stylist or independent contractor):
+
+They do not need to create themselves as staff
+
+Their business account automatically has access to calendar management, store setup, and booking integrations as both the admin and operator
+
+Can configure and preview their calendar UI in real-time:
+
+Left side of screen shows scheduling configuration (availability, booking rules, padding, etc.)
+
+Right side renders a live calendar preview as updates are made
+
+Ensures a WYSIWYG (What You See Is What You Get) experience before integration
+
+Can sync with Google Calendar:
+
+One-click OAuth flow to connect their Google account
+
+View and push updates to and from their Google Calendar in real-time
+
+Allows them to see QwikBooker events on their phone and vice versa
+
+🧑‍🏫 Store Manager
+
+Only has access to their assigned store
+
+Can:
+
+Manage staff within the store
+
+View full store analytics
+
+Edit store schedules
+
+View and manage their own calendar and bookings
+
+🧑‍🔧 Staff (Basic Access)
+
+Can:
+
+See only their schedule
+
+View their upcoming appointments
+
+Access their own clients only
+
+❌ Cannot:
+
+See other staff
+
+View store analytics
+
+Manage users or payment systems
+
+📨 Staff Creation & Onboarding
+
+Staff can be created by either Admins or Store Managers
+
+On creation:
+
+Collect info: email, phone number, role, and store assignment
+
+Trigger email invite with:
+
+Temporary login credentials
+
+Direct link to their business's login page
+
+After first login, staff can:
+
+Change their email/password
+
+Complete their profile
+
+🔗 Integration & Customer Access
+
+Integration Section (in Admin/Manager Dashboard):
+
+Show unique public links to booking pages or calendars
+
+Allow users to:
+
+Share booking pages to social media
+
+Embed the calendar into external websites (planned feature)
+
+🚦 Edge Cases
+
+If store staff tries to access a different store or business URL → deny access
+
+If someone tries to log in with no business context in the URL → show redirect prompt
+
+If user is already authenticated and visits / → redirect to their proper dashboard based on role
+
+summary 
+
+User visits / →
+  If no auth:
+    If no business-name → show instruction
+    If business-name:
+      → check business
+      → show login (store dropdown if needed)
+  If authenticated:
+    If Admin → /dashboard
+    If Staff → /[business]/[store]/dashboard
