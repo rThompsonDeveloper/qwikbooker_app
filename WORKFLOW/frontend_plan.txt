@@ -1,0 +1,137 @@
+
+frontend_plan.txt – QwikBooker Frontend Dev Plan (Vite + TypeScript + Tailwind)
+
+--------------------------------------------
+🧱 PHASE 1: Project Foundation
+
+1.1 Vite Project Bootstrapping
+- Vite with React, TypeScript, SWC, Tailwind
+- src/ as base folder
+- Clean up Vite template clutter
+- Enable path aliases (@/ for src/)
+- Create .env and .env.production for toggles
+
+1.2 File Structure
+
+src/
+├── assets/                # images, brand assets
+├── components/            # shared UI components (buttons, inputs, etc.)
+│   ├── auth/
+│   ├── layout/
+│   └── calendar/
+├── context/
+│   └── AuthContext.tsx
+├── hooks/
+│   └── useBusinessSlug.ts
+├── lib/
+│   ├── api/               # mock and real API calls
+│   ├── config/
+│   │   └── env.ts         # isDev, isMock, etc.
+│   └── validation/        # zod schemas
+├── pages/
+│   ├── auth/              # /:business
+│   └── dashboard/         # /dashboard, /[business]/[store]/dashboard
+├── router/
+│   └── AppRouter.tsx      # route logic + guards
+├── styles/
+│   └── index.css
+├── tests/
+│   └── __mocks__/         # unit test mocks
+└── App.tsx
+
+--------------------------------------------
+🔐 PHASE 2: Auth Flow (No Backend Yet)
+
+2.1 Routing Logic
+- Setup react-router-dom@6
+- Handle:
+  - /
+  - /:business
+  - /:business/:store/dashboard
+  - /dashboard (admin only)
+- Use useBusinessSlug() to detect org
+- Handle redirect logic with useEffect in AppRouter.tsx
+
+2.2 AuthContext
+- Store user, role, token
+- login, logout, getUserInfo functions
+- Fake/mock login behavior in dev (use isDev)
+
+--------------------------------------------
+📄 PHASE 3: Auth Pages + Login Form
+
+3.1 Public Login View
+- If no business slug → show instructions
+- If slug exists → show login form
+- Form uses react-hook-form + zod
+- If multiple stores → show store dropdown (mocked data)
+
+3.2 Admin vs Staff Logic
+- After login, based on role:
+  - Admin → /dashboard
+  - Store staff → /:business/:store/dashboard
+
+--------------------------------------------
+🧑‍💼 PHASE 4: Dashboard Layouts
+
+4.1 Layout Shells
+- components/layout/:
+  - Sidebar.tsx
+  - Topbar.tsx
+  - LayoutWrapper.tsx
+- Shared layout for dashboard views
+
+4.2 Role-Based Views
+- Admin pages: business settings, staff, stores, analytics, integrations
+- Store manager pages: store-level analytics, calendar
+- Staff pages: personal calendar only
+
+--------------------------------------------
+📆 PHASE 5: Calendar Management
+
+5.1 Live Calendar Preview Panel
+- Left panel = form config (availability, rules)
+- Right panel = real-time calendar render
+- Use local state + zod for form validation
+
+5.2 Google Calendar Sync UI (Placeholder)
+- Button to simulate OAuth flow
+- Toggle to enable/disable Google sync
+- Stub API to show "Synced successfully"
+
+--------------------------------------------
+🔁 PHASE 6: Reusability & UI System
+
+6.1 UI Components
+- Button, Input, Select, Card, FormError, etc.
+- Theme-based styling via Tailwind + class composition
+
+6.2 Form Wrapper
+- Wrapper component for react-hook-form + zod
+- Standardized error display, submit states
+
+--------------------------------------------
+🧪 PHASE 7: Testing Setup
+
+7.1 Testing Strategy
+- Use vitest + @testing-library/react
+- Write tests for:
+  - useBusinessSlug
+  - Login form validation
+  - Context behavior (AuthContext)
+
+7.2 Mocking
+- Mock APIs (lib/api/__mocks__)
+- Conditional loading based on import.meta.env.VITE_USE_MOCK
+
+--------------------------------------------
+🚧 PHASE 8: Dev / Prod Workflow
+
+8.1 .env strategy
+.env
+VITE_USE_MOCK=true
+VITE_API_BASE=http://localhost:4000/api
+
+8.2 Dev vs Prod behavior
+- If VITE_USE_MOCK=true, use fake data
+- Else, make real API requests to VITE_API_BASE

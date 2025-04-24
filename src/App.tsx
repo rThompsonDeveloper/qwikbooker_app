@@ -1,11 +1,5 @@
-import "./App.css";
-
 function App() {
-  return (
-    <>
-      <p>qwikbooker</p>
-    </>
-  );
+  return <div className="min-h-screen bg-background" />;
 }
 
 export default App;
