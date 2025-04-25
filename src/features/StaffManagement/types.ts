@@ -17,8 +17,13 @@ export interface StaffMember {
     id: string;
     name: string;
   };
-  status: "active" | "pending" | "inactive";
+  status: "active" | "inactive" | "pending";
   joinDate: string;
+}
+
+export interface Store {
+  id: string;
+  name: string;
 }
 
 // Form Types
@@ -44,6 +49,7 @@ export enum StaffActionTypes {
   ADD_STAFF = "ADD_STAFF",
   UPDATE_STAFF = "UPDATE_STAFF",
   DELETE_STAFF = "DELETE_STAFF",
+  SET_CURRENT_STAFF = "SET_CURRENT_STAFF",
 }
 
 export interface StaffState {
@@ -52,6 +58,7 @@ export interface StaffState {
   error: string | null;
   currentPage: number;
   hasMore: boolean;
+  currentStaff: StaffMember | null;
 }
 
 export type StaffAction =
@@ -64,18 +71,18 @@ export type StaffAction =
     }
   | { type: StaffActionTypes.ADD_STAFF; payload: StaffMember }
   | { type: StaffActionTypes.UPDATE_STAFF; payload: StaffMember }
-  | { type: StaffActionTypes.DELETE_STAFF; payload: string };
+  | { type: StaffActionTypes.DELETE_STAFF; payload: string }
+  | { type: StaffActionTypes.SET_CURRENT_STAFF; payload: StaffMember };
 
 // Context Types
-export interface StaffContextType {
-  staff: StaffMember[];
-  loading: boolean;
-  error: string | null;
-  currentPage: number;
-  hasMore: boolean;
+export interface StaffContextType extends StaffState {
   fetchStaff: (page?: number) => Promise<void>;
-  searchStaff: (query: string, page?: number) => Promise<void>;
-  createStaff: (staff: Omit<StaffMember, "id">) => Promise<void>;
-  editStaff: (id: string, staff: Partial<StaffMember>) => Promise<void>;
-  removeStaff: (id: string) => Promise<void>;
+  searchStaff: (query: string) => Promise<void>;
+  getStaffMember: (id: string) => Promise<void>;
+  editStaff: (
+    id: string,
+    updates: Partial<StaffMember>
+  ) => Promise<StaffMember>;
+  createStaff: (staff: Omit<StaffMember, "id">) => Promise<StaffMember>;
+  removeStaff: (id: string) => Promise<StaffMember>;
 }

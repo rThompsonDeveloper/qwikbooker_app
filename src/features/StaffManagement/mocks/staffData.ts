@@ -16,7 +16,7 @@ export const mockStaff: StaffMember[] = [
       country: "USA",
     },
     assignedStore: {
-      id: "store1",
+      id: "1",
       name: "Downtown Store",
     },
     status: "active",
@@ -37,7 +37,7 @@ export const mockStaff: StaffMember[] = [
       country: "USA",
     },
     assignedStore: {
-      id: "store2",
+      id: "2",
       name: "Uptown Store",
     },
     status: "active",
@@ -58,7 +58,7 @@ export const mockStaff: StaffMember[] = [
       country: "USA",
     },
     assignedStore: {
-      id: "store1",
+      id: "1",
       name: "Downtown Store",
     },
     status: "pending",
@@ -78,6 +78,10 @@ export const mockStaff: StaffMember[] = [
       zipCode: "77001",
       country: "USA",
     },
+    assignedStore: {
+      id: "0",
+      name: "Not assigned",
+    },
     status: "inactive",
     joinDate: "2023-04-05",
   },
@@ -96,7 +100,7 @@ export const mockStaff: StaffMember[] = [
       country: "USA",
     },
     assignedStore: {
-      id: "store3",
+      id: "3",
       name: "Westside Store",
     },
     status: "active",
@@ -117,7 +121,7 @@ export const mockStaff: StaffMember[] = [
       country: "USA",
     },
     assignedStore: {
-      id: "store2",
+      id: "2",
       name: "Uptown Store",
     },
     status: "active",
@@ -138,7 +142,7 @@ export const mockStaff: StaffMember[] = [
       country: "USA",
     },
     assignedStore: {
-      id: "store3",
+      id: "3",
       name: "Westside Store",
     },
     status: "pending",
@@ -159,7 +163,7 @@ export const mockStaff: StaffMember[] = [
       country: "USA",
     },
     assignedStore: {
-      id: "store1",
+      id: "1",
       name: "Downtown Store",
     },
     status: "active",
@@ -180,7 +184,7 @@ export const mockStaff: StaffMember[] = [
       country: "USA",
     },
     assignedStore: {
-      id: "store4",
+      id: "4",
       name: "Eastside Store",
     },
     status: "active",
@@ -201,7 +205,7 @@ export const mockStaff: StaffMember[] = [
       country: "USA",
     },
     assignedStore: {
-      id: "store4",
+      id: "4",
       name: "Eastside Store",
     },
     status: "inactive",
@@ -222,7 +226,7 @@ export const mockStaff: StaffMember[] = [
       country: "USA",
     },
     assignedStore: {
-      id: "store2",
+      id: "2",
       name: "Uptown Store",
     },
     status: "active",
@@ -243,7 +247,7 @@ export const mockStaff: StaffMember[] = [
       country: "USA",
     },
     assignedStore: {
-      id: "store3",
+      id: "3",
       name: "Westside Store",
     },
     status: "pending",
@@ -264,7 +268,7 @@ export const mockStaff: StaffMember[] = [
       country: "USA",
     },
     assignedStore: {
-      id: "store1",
+      id: "1",
       name: "Downtown Store",
     },
     status: "active",
@@ -285,7 +289,7 @@ export const mockStaff: StaffMember[] = [
       country: "USA",
     },
     assignedStore: {
-      id: "store4",
+      id: "4",
       name: "Eastside Store",
     },
     status: "active",
@@ -306,7 +310,7 @@ export const mockStaff: StaffMember[] = [
       country: "USA",
     },
     assignedStore: {
-      id: "store5",
+      id: "5",
       name: "Northside Store",
     },
     status: "active",
@@ -327,7 +331,7 @@ export const mockStaff: StaffMember[] = [
       country: "USA",
     },
     assignedStore: {
-      id: "store5",
+      id: "5",
       name: "Northside Store",
     },
     status: "inactive",
@@ -348,7 +352,7 @@ export const mockStaff: StaffMember[] = [
       country: "USA",
     },
     assignedStore: {
-      id: "store2",
+      id: "2",
       name: "Uptown Store",
     },
     status: "active",
@@ -369,7 +373,7 @@ export const mockStaff: StaffMember[] = [
       country: "USA",
     },
     assignedStore: {
-      id: "store3",
+      id: "3",
       name: "Westside Store",
     },
     status: "pending",
@@ -390,7 +394,7 @@ export const mockStaff: StaffMember[] = [
       country: "USA",
     },
     assignedStore: {
-      id: "store1",
+      id: "1",
       name: "Downtown Store",
     },
     status: "active",
@@ -411,7 +415,7 @@ export const mockStaff: StaffMember[] = [
       country: "USA",
     },
     assignedStore: {
-      id: "store4",
+      id: "4",
       name: "Eastside Store",
     },
     status: "active",

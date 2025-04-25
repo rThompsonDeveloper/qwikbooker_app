@@ -105,6 +105,16 @@ const Table = <T,>({
     return <TableSkeleton columns={columns.length} />;
   }
 
+  if (data.length === 0) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+        <div className="text-center text-gray-500 dark:text-gray-400">
+          No items found
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden ${className}`}
@@ -128,9 +138,9 @@ const Table = <T,>({
       </div>
 
       {/* Virtualized Rows */}
-      <div className="h-[500px]">
+      <div className="max-h-[500px]">
         <List
-          height={500}
+          height={Math.min(data.length * rowHeight, 500)}
           itemCount={data.length || 10} // Show 10 empty rows if no data
           itemSize={rowHeight}
           width="100%"

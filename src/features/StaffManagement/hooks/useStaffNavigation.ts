@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { StaffMember } from "../context/StaffContext";
+import { StaffMember } from "../types";
 
 export const useStaffNavigation = () => {
   const navigate = useNavigate();

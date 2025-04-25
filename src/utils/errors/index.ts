@@ -1,5 +1,15 @@
 import { AppError, ErrorType, ERROR_MESSAGES, ApiErrorResponse } from "./types";
-import { AppErrorHandler, ApiErrorHandler } from "./handlers";
+import {
+  AppErrorHandler,
+  useAppErrorHandler,
+  useApiErrorHandler,
+} from "./handlers";
 
 export type { AppError, ApiErrorResponse };
-export { ErrorType, ERROR_MESSAGES, AppErrorHandler, ApiErrorHandler };
+export {
+  ErrorType,
+  ERROR_MESSAGES,
+  AppErrorHandler,
+  useAppErrorHandler,
+  useApiErrorHandler,
+};

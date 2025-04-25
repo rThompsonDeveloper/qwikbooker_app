@@ -1,7 +1,9 @@
 import axios from "axios";
-import { StaffMember } from "../../types";
+import { StaffMember, Store } from "../../types";
 import { mockStaff } from "../../mocks/staffData";
-import { ApiErrorHandler } from "@/utils/errors";
+import { mockStores } from "../../mocks/storeData";
+import { useApiErrorHandler } from "@/utils/errors";
+import { handleApiError } from "@/utils/errors/apiErrorHandler";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 const FORCE_PROD_API = import.meta.env.VITE_FORCE_PROD_API === "true";
@@ -10,11 +12,6 @@ const FORCE_PROD_API = import.meta.env.VITE_FORCE_PROD_API === "true";
 const API_ENDPOINTS = {
   STAFF: `${API_BASE_URL}/api/staff`,
   STAFF_MEMBER: (id: string) => `${API_BASE_URL}/api/staff/${id}`,
-};
-
-const handleApiError = (error: unknown): never => {
-  console.error("API Error:", error);
-  throw error;
 };
 
 // Development mode API service
@@ -71,7 +68,14 @@ const devApi = {
     if (index === -1) {
       throw new Error("Staff member not found");
     }
-    mockStaff[index] = { ...mockStaff[index], ...staff };
+    // If assignedStore is explicitly set to undefined, remove it from the object
+    if (staff.assignedStore === undefined) {
+      const { assignedStore, ...rest } = staff;
+      mockStaff[index] = { ...mockStaff[index], ...rest };
+      delete mockStaff[index].assignedStore;
+    } else {
+      mockStaff[index] = { ...mockStaff[index], ...staff };
+    }
     return mockStaff[index];
   },
 
@@ -82,6 +86,11 @@ const devApi = {
       throw new Error("Staff member not found");
     }
     mockStaff.splice(index, 1);
+  },
+
+  getStores: async (): Promise<Store[]> => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    return mockStores;
   },
 };
 
@@ -147,6 +156,19 @@ const prodApi = {
       await axios.delete(API_ENDPOINTS.STAFF_MEMBER(id));
     } catch (error) {
       handleApiError(error);
+    }
+  },
+
+  getStores: async (): Promise<Store[]> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/stores`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching stores:", error);
+      throw error;
     }
   },
 };

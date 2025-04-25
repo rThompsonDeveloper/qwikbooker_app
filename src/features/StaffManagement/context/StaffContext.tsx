@@ -8,7 +8,7 @@ import React, {
 import { staffReducer, initialState } from "../reducers/staffReducer";
 import { staffApi } from "../services/api/Staff";
 import { StaffMember, StaffContextType, StaffActionTypes } from "../types";
-import { AppErrorHandler } from "@/utils/errors";
+import { useStaffCache } from "../hooks/useStaffCache";
 
 const StaffContext = createContext<StaffContextType | undefined>(undefined);
 
@@ -16,6 +16,8 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [state, dispatch] = useReducer(staffReducer, initialState);
+  const { getStaffMember: getCachedStaffMember, updateStaffMember } =
+    useStaffCache();
 
   const fetchStaff = useCallback(
     async (page: number = 1) => {
@@ -34,11 +36,10 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({
             payload: { staff: newStaff, page },
           });
         }
-      } catch (error) {
-        const appError = AppErrorHandler.handleError(error);
+      } catch (error: unknown) {
         dispatch({
           type: StaffActionTypes.SET_ERROR,
-          payload: appError.message,
+          payload: error instanceof Error ? error.message : "An error occurred",
         });
       } finally {
         dispatch({ type: StaffActionTypes.SET_LOADING, payload: false });
@@ -57,11 +58,10 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({
           type: StaffActionTypes.SET_STAFF,
           payload: newStaff,
         });
-      } catch (error) {
-        const appError = AppErrorHandler.handleError(error);
+      } catch (error: unknown) {
         dispatch({
           type: StaffActionTypes.SET_ERROR,
-          payload: appError.message,
+          payload: error instanceof Error ? error.message : "An error occurred",
         });
       } finally {
         dispatch({ type: StaffActionTypes.SET_LOADING, payload: false });
@@ -70,58 +70,83 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({
     [] // No dependencies needed since we're using dispatch directly
   );
 
+  const getStaffMember = useCallback(
+    async (id: string) => {
+      try {
+        dispatch({ type: StaffActionTypes.SET_LOADING, payload: true });
+        const staff = await getCachedStaffMember(id);
+        dispatch({ type: StaffActionTypes.SET_CURRENT_STAFF, payload: staff });
+      } catch (error: unknown) {
+        dispatch({
+          type: StaffActionTypes.SET_ERROR,
+          payload: error instanceof Error ? error.message : "An error occurred",
+        });
+      } finally {
+        dispatch({ type: StaffActionTypes.SET_LOADING, payload: false });
+      }
+    },
+    [getCachedStaffMember]
+  );
+
+  const editStaff = useCallback(
+    async (id: string, updates: Partial<StaffMember>): Promise<StaffMember> => {
+      try {
+        dispatch({ type: StaffActionTypes.SET_LOADING, payload: true });
+        const updated = await updateStaffMember(id, updates);
+        dispatch({
+          type: StaffActionTypes.UPDATE_STAFF,
+          payload: updated,
+        });
+        return updated;
+      } catch (error: unknown) {
+        dispatch({
+          type: StaffActionTypes.SET_ERROR,
+          payload: error instanceof Error ? error.message : "An error occurred",
+        });
+        throw error;
+      } finally {
+        dispatch({ type: StaffActionTypes.SET_LOADING, payload: false });
+      }
+    },
+    [updateStaffMember]
+  );
+
   const createStaff = useCallback(
-    async (staff: Omit<StaffMember, "id">) => {
+    async (staff: Omit<StaffMember, "id">): Promise<StaffMember> => {
       try {
         dispatch({ type: StaffActionTypes.SET_ERROR, payload: null });
         const newStaff = await staffApi.createStaff(staff);
         dispatch({ type: StaffActionTypes.ADD_STAFF, payload: newStaff });
-      } catch (error) {
-        const appError = AppErrorHandler.handleError(error);
+        return newStaff;
+      } catch (error: unknown) {
         dispatch({
           type: StaffActionTypes.SET_ERROR,
-          payload: appError.message,
+          payload: error instanceof Error ? error.message : "An error occurred",
         });
+        throw error;
       }
     },
-    [] // No dependencies needed since we're using dispatch directly
-  );
-
-  const editStaff = useCallback(
-    async (id: string, staff: Partial<StaffMember>) => {
-      try {
-        dispatch({ type: StaffActionTypes.SET_ERROR, payload: null });
-        const updatedStaff = await staffApi.updateStaff(id, staff);
-        dispatch({
-          type: StaffActionTypes.UPDATE_STAFF,
-          payload: updatedStaff,
-        });
-      } catch (error) {
-        const appError = AppErrorHandler.handleError(error);
-        dispatch({
-          type: StaffActionTypes.SET_ERROR,
-          payload: appError.message,
-        });
-      }
-    },
-    [] // No dependencies needed since we're using dispatch directly
+    []
   );
 
   const removeStaff = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<StaffMember> => {
       try {
         dispatch({ type: StaffActionTypes.SET_ERROR, payload: null });
+        const staff = state.staff.find((m) => m.id === id);
+        if (!staff) throw new Error("Staff member not found");
         await staffApi.deleteStaff(id);
         dispatch({ type: StaffActionTypes.DELETE_STAFF, payload: id });
-      } catch (error) {
-        const appError = AppErrorHandler.handleError(error);
+        return staff;
+      } catch (error: unknown) {
         dispatch({
           type: StaffActionTypes.SET_ERROR,
-          payload: appError.message,
+          payload: error instanceof Error ? error.message : "An error occurred",
         });
+        throw error;
       }
     },
-    [] // No dependencies needed since we're using dispatch directly
+    [state.staff]
   );
 
   return (
@@ -132,10 +157,12 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({
         error: state.error,
         currentPage: state.currentPage,
         hasMore: state.hasMore,
+        currentStaff: state.currentStaff,
         fetchStaff,
         searchStaff,
-        createStaff,
+        getStaffMember,
         editStaff,
+        createStaff,
         removeStaff,
       }}
     >

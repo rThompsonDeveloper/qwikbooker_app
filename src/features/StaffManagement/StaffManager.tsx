@@ -1,24 +1,38 @@
 import React from "react";
-import StaffList from "./components/StaffList";
+import { StaffProvider } from "./context/StaffContext";
+import { useNavigate } from "react-router-dom";
+import Button from "@/components/ui/Button";
+import { PlusIcon } from "@heroicons/react/24/outline";
+import StaffRoutes from "./routes/StaffRoutes";
 
 const StaffManager: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
-    <div className="flex flex-col h-full">
-      {/* Header Section */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Staff Management
-        </h1>
-        <div className="flex items-center space-x-4">
-          {/* Add any header actions here */}
+    <StaffProvider>
+      <div className="flex flex-col h-full">
+        {/* Header Section */}
+        <div className="flex-none flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Staff Management
+          </h1>
+          <Button
+            onClick={() => navigate("/staff/new")}
+            className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
+          >
+            <PlusIcon className="w-5 h-5" />
+            Add Staff
+          </Button>
+        </div>
+
+        {/* Content Area */}
+        <div className="flex-1">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+            <StaffRoutes />
+          </div>
         </div>
       </div>
-
-      {/* Main Content Area */}
-      <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-        <StaffList />
-      </div>
-    </div>
+    </StaffProvider>
   );
 };
 

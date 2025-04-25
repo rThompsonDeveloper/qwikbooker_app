@@ -35,7 +35,7 @@ export const useStaffData = () => {
   const search = useCallback(
     (query: string) => {
       if (query) {
-        searchStaff(query, 1);
+        searchStaff(query);
       } else {
         fetchStaff(1);
       }

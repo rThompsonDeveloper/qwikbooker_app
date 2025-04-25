@@ -70,10 +70,6 @@ const StaffList: React.FC = () => {
     [formatRole, getStatusColor]
   );
 
-  if (staff.length === 0 && !isLoading) {
-    return <div className="text-center py-4">No staff members found</div>;
-  }
-
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">

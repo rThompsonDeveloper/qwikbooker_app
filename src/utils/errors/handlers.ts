@@ -1,5 +1,6 @@
 import axios from "axios";
 import { AppError, ErrorType, ERROR_MESSAGES, ApiErrorResponse } from "./types";
+import { useError } from "@/context/ErrorContext";
 
 export class AppErrorHandler {
   static createError(
@@ -14,34 +15,6 @@ export class AppErrorHandler {
     };
   }
 
-  static handleError(error: unknown): AppError {
-    if (error instanceof Error) {
-      // Handle known error types
-      if (error.name === "ValidationError") {
-        return this.createError(ErrorType.VALIDATION, error.message);
-      }
-      if (error.name === "NetworkError") {
-        return this.createError(ErrorType.NETWORK, error.message);
-      }
-      if (error.name === "AuthenticationError") {
-        return this.createError(ErrorType.AUTHENTICATION, error.message);
-      }
-      if (error.name === "AuthorizationError") {
-        return this.createError(ErrorType.AUTHORIZATION, error.message);
-      }
-      if (error.name === "NotFoundError") {
-        return this.createError(ErrorType.NOT_FOUND, error.message);
-      }
-    }
-
-    // Handle unknown errors
-    return this.createError(
-      ErrorType.UNKNOWN,
-      "An unexpected error occurred",
-      error
-    );
-  }
-
   static isAppError(error: unknown): error is AppError {
     return (
       typeof error === "object" &&
@@ -52,14 +25,70 @@ export class AppErrorHandler {
   }
 }
 
-export class ApiErrorHandler {
-  static handleApiError(error: unknown): AppError {
+export const useAppErrorHandler = () => {
+  const { addError } = useError();
+
+  const handleError = (error: unknown): AppError => {
+    if (error instanceof Error) {
+      // Handle known error types
+      if (error.name === "ValidationError") {
+        addError(error.message, "warning");
+        return AppErrorHandler.createError(ErrorType.VALIDATION, error.message);
+      }
+      if (error.name === "NetworkError") {
+        addError(error.message, "error");
+        return AppErrorHandler.createError(ErrorType.NETWORK, error.message);
+      }
+      if (error.name === "AuthenticationError") {
+        addError(error.message, "warning");
+        return AppErrorHandler.createError(
+          ErrorType.AUTHENTICATION,
+          error.message
+        );
+      }
+      if (error.name === "AuthorizationError") {
+        addError(error.message, "warning");
+        return AppErrorHandler.createError(
+          ErrorType.AUTHORIZATION,
+          error.message
+        );
+      }
+      if (error.name === "NotFoundError") {
+        addError(error.message, "info");
+        return AppErrorHandler.createError(ErrorType.NOT_FOUND, error.message);
+      }
+    }
+
+    // Handle unknown errors
+    addError("An unexpected error occurred", "error");
+    return AppErrorHandler.createError(
+      ErrorType.UNKNOWN,
+      "An unexpected error occurred",
+      error
+    );
+  };
+
+  return {
+    handleError,
+  };
+};
+
+export const useApiErrorHandler = () => {
+  const { handleError } = useAppErrorHandler();
+  const { addError } = useError();
+
+  const handleApiError = (error: unknown): AppError => {
     if (axios.isAxiosError(error)) {
       const apiError = error.response?.data as ApiErrorResponse;
 
       if (apiError) {
+        const type = getErrorType(apiError.statusCode);
+        addError(
+          apiError.message,
+          type === ErrorType.VALIDATION ? "warning" : "error"
+        );
         return {
-          type: this.getErrorType(apiError.statusCode),
+          type,
           message: apiError.message,
           statusCode: apiError.statusCode,
           code: apiError.code,
@@ -69,6 +98,7 @@ export class ApiErrorHandler {
 
       // Handle network errors
       if (error.code === "ECONNABORTED") {
+        addError("Request timed out", "error");
         return AppErrorHandler.createError(
           ErrorType.NETWORK,
           "Request timed out"
@@ -77,10 +107,10 @@ export class ApiErrorHandler {
     }
 
     // Fallback to generic error handling
-    return AppErrorHandler.handleError(error);
-  }
+    return handleError(error);
+  };
 
-  private static getErrorType(statusCode: number): ErrorType {
+  const getErrorType = (statusCode: number): ErrorType => {
     switch (statusCode) {
       case 400:
         return ErrorType.VALIDATION;
@@ -95,5 +125,9 @@ export class ApiErrorHandler {
       default:
         return ErrorType.UNKNOWN;
     }
-  }
-}
+  };
+
+  return {
+    handleApiError,
+  };
+};

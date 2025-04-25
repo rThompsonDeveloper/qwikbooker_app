@@ -43,6 +43,8 @@ describe("useStaffData", () => {
       editStaff: vi.fn(),
       createStaff: vi.fn(),
       removeStaff: vi.fn(),
+      getStaffMember: vi.fn(),
+      currentStaff: null,
     });
   });
 

@@ -42,6 +42,11 @@ export const deleteStaff = (id: string) => ({
   payload: id,
 });
 
+export const setCurrentStaff = (staff: StaffMember) => ({
+  type: StaffActionTypes.SET_CURRENT_STAFF as const,
+  payload: staff,
+});
+
 // Initial State
 export const initialState: StaffState = {
   staff: [],
@@ -49,6 +54,7 @@ export const initialState: StaffState = {
   error: null,
   currentPage: 1,
   hasMore: true,
+  currentStaff: null,
 };
 
 // Reducer
@@ -83,6 +89,11 @@ export const staffReducer = (
       return {
         ...state,
         staff: state.staff.filter((member) => member.id !== action.payload),
+      };
+    case StaffActionTypes.SET_CURRENT_STAFF:
+      return {
+        ...state,
+        currentStaff: action.payload,
       };
     default:
       return state;
