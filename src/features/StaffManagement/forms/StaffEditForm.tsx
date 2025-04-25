@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { UserCircleIcon, EnvelopeIcon } from "@heroicons/react/24/outline";
 import TextInput from "@/components/form/TextInput";
@@ -9,6 +9,7 @@ import { useStaffData } from "../hooks/useStaffData";
 import { useStaffNavigation } from "../hooks/useStaffNavigation";
 import { useStaffForm } from "../hooks/useStaffForm";
 import { useStaffFormOptions } from "../hooks/useStaffFormOptions";
+import { StaffMemberFormData } from "../forms/schemas/staff";
 
 const StaffEditForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,16 +17,35 @@ const StaffEditForm: React.FC = () => {
   const { navigateToStaffMember } = useStaffNavigation();
   const { roleOptions, statusOptions } = useStaffFormOptions();
 
-  const { register, handleSubmit, errors, isSubmitting } = useStaffForm({
-    staff,
-    onSubmit: async (data) => {
-      await editStaff(id!, data);
-      navigateToStaffMember(id!);
+  const handleSubmit = useCallback(
+    async (data: StaffMemberFormData) => {
+      if (id) {
+        await editStaff(id, data);
+        navigateToStaffMember(id);
+      }
     },
+    [editStaff, navigateToStaffMember, id]
+  );
+
+  const handleCancel = useCallback(() => {
+    if (id) {
+      navigateToStaffMember(id);
+    }
+  }, [navigateToStaffMember, id]);
+
+  const {
+    register,
+    handleSubmit: formHandleSubmit,
+    errors,
+    isSubmitting,
+  } = useStaffForm({
+    staff,
+    onSubmit: handleSubmit,
     memberId: id,
   });
 
-  const member = staff.find((m) => m.id === id);
+  const member = useMemo(() => staff.find((m) => m.id === id), [staff, id]);
+
   if (!member) {
     return (
       <div className="text-center py-4 text-red-500">
@@ -37,7 +57,7 @@ const StaffEditForm: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={formHandleSubmit} className="p-6 space-y-6">
           {/* Header */}
           <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
             <div className="flex items-center space-x-4">
@@ -77,9 +97,7 @@ const StaffEditForm: React.FC = () => {
                   label="Phone Number"
                   register={register("phoneNumber")}
                   error={errors.phoneNumber?.message}
-                  defaultValue={
-                    staff?.find((member) => member.id === id)?.phoneNumber
-                  }
+                  defaultValue={member.phoneNumber}
                 />
               </div>
             </div>
@@ -124,7 +142,7 @@ const StaffEditForm: React.FC = () => {
           <div className="flex justify-end space-x-4">
             <button
               type="button"
-              onClick={() => navigateToStaffMember(id!)}
+              onClick={handleCancel}
               className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600"
             >
               Cancel
@@ -143,4 +161,4 @@ const StaffEditForm: React.FC = () => {
   );
 };
 
-export default StaffEditForm;
+export default React.memo(StaffEditForm);

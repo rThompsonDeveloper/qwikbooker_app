@@ -8,9 +8,8 @@ import {
   addStaff,
   updateStaff,
   deleteStaff,
-  StaffState,
 } from "../reducers/staffReducer";
-import { StaffMember } from "../context/StaffContext";
+import { StaffMember, StaffState } from "../types";
 
 const mockStaffMember: StaffMember = {
   id: "1",

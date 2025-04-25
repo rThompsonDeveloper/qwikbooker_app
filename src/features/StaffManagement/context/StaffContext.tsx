@@ -5,42 +5,10 @@ import React, {
   ReactNode,
   useCallback,
 } from "react";
-import {
-  staffReducer,
-  initialState,
-  StaffState,
-  StaffActionTypes,
-} from "../reducers/staffReducer";
+import { staffReducer, initialState } from "../reducers/staffReducer";
 import { staffApi } from "../services/api/Staff";
-
-export interface StaffMember {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string;
-  role: "admin" | "store manager" | "staff";
-  address: {
-    street: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    country: string;
-  };
-  assignedStore?: {
-    id: string;
-    name: string;
-  };
-  status: "active" | "pending" | "inactive";
-  joinDate: string;
-}
-
-interface StaffContextType extends StaffState {
-  fetchStaff: () => Promise<void>;
-  createStaff: (staff: Omit<StaffMember, "id">) => Promise<void>;
-  editStaff: (id: string, updates: Partial<StaffMember>) => Promise<void>;
-  removeStaff: (id: string) => Promise<void>;
-}
+import { StaffMember, StaffContextType, StaffActionTypes } from "../types";
+import { AppErrorHandler } from "@/utils/errors";
 
 const StaffContext = createContext<StaffContextType | undefined>(undefined);
 
@@ -64,7 +32,8 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({
       const staff = await staffApi.getStaff();
       dispatch({ type: StaffActionTypes.SET_STAFF, payload: staff });
     } catch (error) {
-      setError(error instanceof Error ? error.message : "An error occurred");
+      const appError = AppErrorHandler.handleError(error);
+      setError(appError.message);
     } finally {
       setLoading(false);
     }
@@ -77,8 +46,9 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({
         const newStaff = await staffApi.createStaff(staff);
         dispatch({ type: StaffActionTypes.ADD_STAFF, payload: newStaff });
       } catch (error) {
-        setError(error instanceof Error ? error.message : "An error occurred");
-        throw error;
+        const appError = AppErrorHandler.handleError(error);
+        setError(appError.message);
+        throw appError;
       }
     },
     [setError]
@@ -94,8 +64,9 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({
           payload: updatedStaff,
         });
       } catch (error) {
-        setError(error instanceof Error ? error.message : "An error occurred");
-        throw error;
+        const appError = AppErrorHandler.handleError(error);
+        setError(appError.message);
+        throw appError;
       }
     },
     [setError]
@@ -108,8 +79,9 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({
         await staffApi.deleteStaff(id);
         dispatch({ type: StaffActionTypes.DELETE_STAFF, payload: id });
       } catch (error) {
-        setError(error instanceof Error ? error.message : "An error occurred");
-        throw error;
+        const appError = AppErrorHandler.handleError(error);
+        setError(appError.message);
+        throw appError;
       }
     },
     [setError]
@@ -132,7 +104,7 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({
 
 export const useStaff = () => {
   const context = useContext(StaffContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useStaff must be used within a StaffProvider");
   }
   return context;

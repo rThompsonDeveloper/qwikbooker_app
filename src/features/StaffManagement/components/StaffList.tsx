@@ -5,7 +5,7 @@ import StaffListSkeleton from "./StaffListSkeleton";
 import { useStaffData } from "../hooks/useStaffData";
 import { useStaffNavigation } from "../hooks/useStaffNavigation";
 import { useStaffFormatting } from "../hooks/useStaffFormatting";
-import { StaffMember } from "../context/StaffContext";
+import { StaffMember } from "../types";
 
 const StaffList: React.FC = () => {
   const { staff, loading, error } = useStaffData();

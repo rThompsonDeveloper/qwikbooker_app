@@ -3,7 +3,7 @@ import { renderHook, act } from "@testing-library/react";
 import { useStaffData } from "../hooks/useStaffData";
 import { useStaff } from "../context/StaffContext";
 import { useParams } from "react-router-dom";
-import { StaffMember } from "../context/StaffContext";
+import { StaffMember } from "../types";
 
 // Mock the hooks
 vi.mock("../context/StaffContext");

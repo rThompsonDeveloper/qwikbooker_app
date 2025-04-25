@@ -1,4 +1,4 @@
-import { StaffMember } from "../context/StaffContext";
+import { StaffMember } from "../types";
 
 export const useStaffFormatting = () => {
   const getStatusColor = (status: string) => {

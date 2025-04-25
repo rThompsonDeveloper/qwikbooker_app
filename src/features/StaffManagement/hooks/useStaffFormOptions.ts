@@ -1,17 +1,19 @@
+import { FormOption } from "../types";
+
 export const useStaffFormOptions = () => {
-  const roleOptions = [
+  const roleOptions: FormOption[] = [
     { value: "admin", label: "Admin" },
     { value: "store manager", label: "Store Manager" },
     { value: "staff", label: "Staff" },
   ];
 
-  const statusOptions = [
+  const statusOptions: FormOption[] = [
     { value: "active", label: "Active" },
     { value: "pending", label: "Pending" },
     { value: "inactive", label: "Inactive" },
   ];
 
-  const countryOptions = [
+  const countryOptions: FormOption[] = [
     { value: "US", label: "United States" },
     { value: "CA", label: "Canada" },
     { value: "UK", label: "United Kingdom" },

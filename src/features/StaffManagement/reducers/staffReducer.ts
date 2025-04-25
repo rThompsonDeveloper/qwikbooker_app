@@ -1,15 +1,10 @@
-import { StaffMember } from "../context/StaffContext";
+import {
+  StaffMember,
+  StaffState,
+  StaffActionTypes,
+  StaffAction,
+} from "../types";
 import { staffApi } from "../services/api/Staff";
-
-// Action Types
-export enum StaffActionTypes {
-  SET_LOADING = "SET_LOADING",
-  SET_ERROR = "SET_ERROR",
-  SET_STAFF = "SET_STAFF",
-  ADD_STAFF = "ADD_STAFF",
-  UPDATE_STAFF = "UPDATE_STAFF",
-  DELETE_STAFF = "DELETE_STAFF",
-}
 
 // Action Creators
 export const setLoading = (loading: boolean) => ({
@@ -42,28 +37,12 @@ export const deleteStaff = (id: string) => ({
   payload: id,
 });
 
-// State Type
-export interface StaffState {
-  staff: StaffMember[];
-  loading: boolean;
-  error: string | null;
-}
-
 // Initial State
 export const initialState: StaffState = {
   staff: [],
   loading: false,
   error: null,
 };
-
-// Action Types
-type StaffAction =
-  | { type: StaffActionTypes.SET_LOADING; payload: boolean }
-  | { type: StaffActionTypes.SET_ERROR; payload: string | null }
-  | { type: StaffActionTypes.SET_STAFF; payload: StaffMember[] }
-  | { type: StaffActionTypes.ADD_STAFF; payload: StaffMember }
-  | { type: StaffActionTypes.UPDATE_STAFF; payload: StaffMember }
-  | { type: StaffActionTypes.DELETE_STAFF; payload: string };
 
 // Reducer
 export const staffReducer = (

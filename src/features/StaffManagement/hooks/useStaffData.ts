@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useStaff } from "../context/StaffContext";
 import { useParams } from "react-router-dom";
-import { StaffMember } from "../context/StaffContext";
+import { StaffMember } from "../types";
 import { StaffMemberFormData } from "../forms/schemas/staff";
 
 export const useStaffData = () => {
