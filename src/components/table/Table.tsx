@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { FixedSizeList as List } from "react-window";
 
 export interface TableColumn<T> {
   key: string;
@@ -13,6 +14,7 @@ interface TableProps<T> {
   keyExtractor: (item: T) => string;
   className?: string;
   onRowClick?: (item: T) => void;
+  rowHeight?: number;
 }
 
 const Table = <T,>({
@@ -21,16 +23,55 @@ const Table = <T,>({
   keyExtractor,
   className = "",
   onRowClick,
+  rowHeight = 72, // Default height for a row
 }: TableProps<T>) => {
+  const gridTemplateColumns = useMemo(
+    () => `repeat(${columns.length}, 1fr)`,
+    [columns.length]
+  );
+
+  const Row = ({
+    index,
+    style,
+  }: {
+    index: number;
+    style: React.CSSProperties;
+  }) => {
+    const item = data[index];
+    return (
+      <div
+        key={keyExtractor(item)}
+        className="grid cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150"
+        style={{
+          ...style,
+          gridTemplateColumns,
+        }}
+        onClick={() => onRowClick?.(item)}
+      >
+        {columns.map((column) => (
+          <div
+            key={`${keyExtractor(item)}-${column.key}`}
+            className={`p-4 border-b border-gray-200 dark:border-gray-700 ${
+              column.align === "right"
+                ? "text-right"
+                : column.align === "center"
+                ? "text-center"
+                : ""
+            }`}
+          >
+            {column.render(item)}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div
       className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden ${className}`}
     >
       {/* Header */}
-      <div
-        className="grid"
-        style={{ gridTemplateColumns: `repeat(${columns.length}, 1fr)` }}
-      >
+      <div className="grid" style={{ gridTemplateColumns }}>
         {columns.map((column) => (
           <div
             key={column.key}
@@ -47,32 +88,17 @@ const Table = <T,>({
         ))}
       </div>
 
-      {/* Rows */}
-      {data.map((item) => (
-        <div
-          key={keyExtractor(item)}
-          className="grid cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150"
-          style={{ gridTemplateColumns: `repeat(${columns.length}, 1fr)` }}
-          onClick={() => onRowClick?.(item)}
-        >
-          {columns.map((column) => (
-            <div
-              key={`${keyExtractor(item)}-${column.key}`}
-              className={`p-4 border-b border-gray-200 dark:border-gray-700 ${
-                column.align === "right"
-                  ? "text-right"
-                  : column.align === "center"
-                  ? "text-center"
-                  : ""
-              }`}
-            >
-              {column.render(item)}
-            </div>
-          ))}
-        </div>
-      ))}
+      {/* Virtualized Rows */}
+      <List
+        height={Math.min(data.length * rowHeight, 500)} // Max height of 500px
+        itemCount={data.length}
+        itemSize={rowHeight}
+        width="100%"
+      >
+        {Row}
+      </List>
     </div>
   );
 };
 
-export default Table;
+export default React.memo(Table) as <T>(props: TableProps<T>) => JSX.Element;
