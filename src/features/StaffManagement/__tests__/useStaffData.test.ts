@@ -39,6 +39,7 @@ describe("useStaffData", () => {
       currentPage: 1,
       hasMore: true,
       fetchStaff: vi.fn(),
+      searchStaff: vi.fn(),
       editStaff: vi.fn(),
       createStaff: vi.fn(),
       removeStaff: vi.fn(),

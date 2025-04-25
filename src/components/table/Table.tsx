@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useEffect } from "react";
 import { FixedSizeList as List } from "react-window";
+import TableSkeleton from "./TableSkeleton";
 
 export interface TableColumn<T> {
   key: string;
@@ -35,6 +36,7 @@ const Table = <T,>({
   );
 
   const hasReachedEndRef = useRef(false);
+  const lastDataLengthRef = useRef(data.length);
 
   const Row = ({
     index,
@@ -77,17 +79,31 @@ const Table = <T,>({
   }: {
     visibleStopIndex: number;
   }) => {
+    // Only trigger onEndReached if:
+    // 1. We're not loading
+    // 2. We haven't already triggered it recently
+    // 3. We're actually at the end of the list
+    // 4. The data length hasn't changed (to prevent false triggers during search)
     if (
-      visibleStopIndex === data.length - 1 &&
-      onEndReached &&
+      !isLoading &&
       !hasReachedEndRef.current &&
-      !isLoading
+      visibleStopIndex === data.length - 1 &&
+      lastDataLengthRef.current === data.length
     ) {
       hasReachedEndRef.current = true;
-      onEndReached();
+      onEndReached?.();
       setTimeout(() => (hasReachedEndRef.current = false), 1000);
     }
   };
+
+  // Update the last data length ref when data changes
+  useEffect(() => {
+    lastDataLengthRef.current = data.length;
+  }, [data.length]);
+
+  if (isLoading && data.length === 0) {
+    return <TableSkeleton columns={columns.length} />;
+  }
 
   return (
     <div
@@ -112,20 +128,22 @@ const Table = <T,>({
       </div>
 
       {/* Virtualized Rows */}
-      <List
-        height={Math.min(data.length * rowHeight, 500)} // Max height of 500px
-        itemCount={data.length}
-        itemSize={rowHeight}
-        width="100%"
-        onItemsRendered={handleItemsRendered}
-      >
-        {Row}
-      </List>
+      <div className="h-[500px]">
+        <List
+          height={500}
+          itemCount={data.length || 10} // Show 10 empty rows if no data
+          itemSize={rowHeight}
+          width="100%"
+          onItemsRendered={handleItemsRendered}
+        >
+          {Row}
+        </List>
+      </div>
 
       {/* Loading Indicator */}
       {isLoading && (
         <div className="flex justify-center items-center p-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 dark:border-blue-300"></div>
         </div>
       )}
     </div>

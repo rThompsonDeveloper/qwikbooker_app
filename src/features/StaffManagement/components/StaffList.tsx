@@ -1,7 +1,6 @@
-import React, { useMemo, useCallback, useState } from "react";
+import React, { useMemo, useCallback, useState, useEffect } from "react";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { Table, TableColumn } from "@/components/table";
-import StaffListSkeleton from "./StaffListSkeleton";
 import { useStaffData } from "../hooks/useStaffData";
 import { useStaffNavigation } from "../hooks/useStaffNavigation";
 import { useStaffFormatting } from "../hooks/useStaffFormatting";
@@ -9,26 +8,21 @@ import { StaffMember } from "../types";
 import { useDebounce } from "@/hooks/useDebounce";
 
 const StaffList: React.FC = () => {
-  const { staff, fetchStaff, isLoading, hasMore } = useStaffData();
+  const { staff, loadMore, isLoading, hasMore, search } = useStaffData();
   const { navigateToStaffMember } = useStaffNavigation();
   const { getStatusColor, formatRole } = useStaffFormatting();
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  const filteredStaff = useMemo(() => {
-    if (!debouncedSearchTerm) return staff;
-    return staff.filter((member) =>
-      `${member.firstName} ${member.lastName}`
-        .toLowerCase()
-        .includes(debouncedSearchTerm.toLowerCase())
-    );
-  }, [staff, debouncedSearchTerm]);
+  useEffect(() => {
+    search(debouncedSearchTerm);
+  }, [debouncedSearchTerm, search]);
 
   const handleLoadMore = useCallback(() => {
     if (!isLoading && hasMore) {
-      fetchStaff();
+      loadMore();
     }
-  }, [fetchStaff, isLoading, hasMore]);
+  }, [loadMore, isLoading, hasMore]);
 
   const columns = useMemo<TableColumn<(typeof staff)[0]>[]>(
     () => [
@@ -76,11 +70,7 @@ const StaffList: React.FC = () => {
     [formatRole, getStatusColor]
   );
 
-  if (isLoading && staff.length === 0) {
-    return <StaffListSkeleton />;
-  }
-
-  if (staff.length === 0) {
+  if (staff.length === 0 && !isLoading) {
     return <div className="text-center py-4">No staff members found</div>;
   }
 
@@ -100,7 +90,7 @@ const StaffList: React.FC = () => {
       </div>
       <Table<StaffMember>
         columns={columns}
-        data={filteredStaff}
+        data={staff}
         keyExtractor={(item) => item.id}
         onRowClick={navigateToStaffMember}
         onEndReached={handleLoadMore}

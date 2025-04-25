@@ -1,12 +1,19 @@
 import { useCallback } from "react";
 import { useParams } from "react-router-dom";
-import { StaffMember } from "../types";
 import { useStaff } from "../context/StaffContext";
 
 export const useStaffData = () => {
   const { id } = useParams<{ id: string }>();
-  const { staff, loading, error, fetchStaff, currentPage, hasMore, editStaff } =
-    useStaff();
+  const {
+    staff,
+    loading,
+    error,
+    fetchStaff,
+    currentPage,
+    hasMore,
+    editStaff,
+    searchStaff,
+  } = useStaff();
 
   const currentStaffMember = id
     ? staff.find((member) => member.id === id)
@@ -25,13 +32,25 @@ export const useStaffData = () => {
     }
   }, [fetchStaff, loading, hasMore, currentPage]);
 
+  const search = useCallback(
+    (query: string) => {
+      if (query) {
+        searchStaff(query, 1);
+      } else {
+        fetchStaff(1);
+      }
+    },
+    [searchStaff, fetchStaff]
+  );
+
   return {
     staff,
     loading,
     error,
     currentStaffMember,
     getStaffMemberById,
-    fetchStaff: loadMore,
+    loadMore,
+    search,
     editStaff,
     isLoading: loading,
     hasMore,

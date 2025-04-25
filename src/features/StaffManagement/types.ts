@@ -74,6 +74,7 @@ export interface StaffContextType {
   currentPage: number;
   hasMore: boolean;
   fetchStaff: (page?: number) => Promise<void>;
+  searchStaff: (query: string, page?: number) => Promise<void>;
   createStaff: (staff: Omit<StaffMember, "id">) => Promise<void>;
   editStaff: (id: string, staff: Partial<StaffMember>) => Promise<void>;
   removeStaff: (id: string) => Promise<void>;
