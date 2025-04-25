@@ -5,7 +5,7 @@ import { useStaff } from "../context/StaffContext";
 
 export const useStaffData = () => {
   const { id } = useParams<{ id: string }>();
-  const { staff, loading, error, fetchStaff, currentPage, hasMore } =
+  const { staff, loading, error, fetchStaff, currentPage, hasMore, editStaff } =
     useStaff();
 
   const currentStaffMember = id
@@ -32,6 +32,7 @@ export const useStaffData = () => {
     currentStaffMember,
     getStaffMemberById,
     fetchStaff: loadMore,
+    editStaff,
     isLoading: loading,
     hasMore,
   };
