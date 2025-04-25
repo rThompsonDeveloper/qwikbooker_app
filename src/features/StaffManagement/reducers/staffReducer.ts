@@ -22,6 +22,11 @@ export const setStaff = (staff: StaffMember[]) => ({
   payload: staff,
 });
 
+export const appendStaff = (staff: StaffMember[], page: number) => ({
+  type: StaffActionTypes.APPEND_STAFF,
+  payload: { staff, page },
+});
+
 export const addStaff = (staff: StaffMember) => ({
   type: StaffActionTypes.ADD_STAFF as const,
   payload: staff,
@@ -42,6 +47,8 @@ export const initialState: StaffState = {
   staff: [],
   loading: false,
   error: null,
+  currentPage: 1,
+  hasMore: true,
 };
 
 // Reducer
@@ -55,7 +62,14 @@ export const staffReducer = (
     case StaffActionTypes.SET_ERROR:
       return { ...state, error: action.payload };
     case StaffActionTypes.SET_STAFF:
-      return { ...state, staff: action.payload };
+      return { ...state, staff: action.payload, currentPage: 1, hasMore: true };
+    case StaffActionTypes.APPEND_STAFF:
+      return {
+        ...state,
+        staff: [...state.staff, ...action.payload.staff],
+        currentPage: action.payload.page,
+        hasMore: action.payload.staff.length > 0,
+      };
     case StaffActionTypes.ADD_STAFF:
       return { ...state, staff: [...state.staff, action.payload] };
     case StaffActionTypes.UPDATE_STAFF:

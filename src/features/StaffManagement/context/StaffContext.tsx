@@ -4,6 +4,7 @@ import React, {
   useReducer,
   ReactNode,
   useCallback,
+  useEffect,
 } from "react";
 import { staffReducer, initialState } from "../reducers/staffReducer";
 import { staffApi } from "../services/api/Staff";
@@ -25,19 +26,29 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({
     dispatch({ type: StaffActionTypes.SET_ERROR, payload: error });
   }, []);
 
-  const fetchStaff = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const staff = await staffApi.getStaff();
-      dispatch({ type: StaffActionTypes.SET_STAFF, payload: staff });
-    } catch (error) {
-      const appError = AppErrorHandler.handleError(error);
-      setError(appError.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [setLoading, setError]);
+  const fetchStaff = useCallback(
+    async (page: number = 1) => {
+      try {
+        setLoading(true);
+        setError(null);
+        const newStaff = await staffApi.getStaff(page);
+        dispatch({
+          type: StaffActionTypes.APPEND_STAFF,
+          payload: { staff: newStaff, page },
+        });
+      } catch (error) {
+        const appError = AppErrorHandler.handleError(error);
+        setError(appError.message);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [setLoading, setError]
+  );
+
+  useEffect(() => {
+    fetchStaff(1);
+  }, [fetchStaff]);
 
   const createStaff = useCallback(
     async (staff: Omit<StaffMember, "id">) => {
@@ -48,17 +59,16 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({
       } catch (error) {
         const appError = AppErrorHandler.handleError(error);
         setError(appError.message);
-        throw appError;
       }
     },
     [setError]
   );
 
   const editStaff = useCallback(
-    async (id: string, updates: Partial<StaffMember>) => {
+    async (id: string, staff: Partial<StaffMember>) => {
       try {
         setError(null);
-        const updatedStaff = await staffApi.updateStaff(id, updates);
+        const updatedStaff = await staffApi.updateStaff(id, staff);
         dispatch({
           type: StaffActionTypes.UPDATE_STAFF,
           payload: updatedStaff,
@@ -66,7 +76,6 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({
       } catch (error) {
         const appError = AppErrorHandler.handleError(error);
         setError(appError.message);
-        throw appError;
       }
     },
     [setError]
@@ -81,7 +90,6 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({
       } catch (error) {
         const appError = AppErrorHandler.handleError(error);
         setError(appError.message);
-        throw appError;
       }
     },
     [setError]
@@ -90,7 +98,11 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({
   return (
     <StaffContext.Provider
       value={{
-        ...state,
+        staff: state.staff,
+        loading: state.loading,
+        error: state.error,
+        currentPage: state.currentPage,
+        hasMore: state.hasMore,
         fetchStaff,
         createStaff,
         editStaff,
@@ -104,7 +116,7 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({
 
 export const useStaff = () => {
   const context = useContext(StaffContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useStaff must be used within a StaffProvider");
   }
   return context;

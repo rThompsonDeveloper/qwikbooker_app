@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useCallback, useState } from "react";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { Table, TableColumn } from "@/components/table";
 import StaffListSkeleton from "./StaffListSkeleton";
@@ -6,11 +6,29 @@ import { useStaffData } from "../hooks/useStaffData";
 import { useStaffNavigation } from "../hooks/useStaffNavigation";
 import { useStaffFormatting } from "../hooks/useStaffFormatting";
 import { StaffMember } from "../types";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const StaffList: React.FC = () => {
-  const { staff, loading, error } = useStaffData();
+  const { staff, fetchStaff, isLoading, hasMore } = useStaffData();
   const { navigateToStaffMember } = useStaffNavigation();
   const { getStatusColor, formatRole } = useStaffFormatting();
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+  const filteredStaff = useMemo(() => {
+    if (!debouncedSearchTerm) return staff;
+    return staff.filter((member) =>
+      `${member.firstName} ${member.lastName}`
+        .toLowerCase()
+        .includes(debouncedSearchTerm.toLowerCase())
+    );
+  }, [staff, debouncedSearchTerm]);
+
+  const handleLoadMore = useCallback(() => {
+    if (!isLoading && hasMore) {
+      fetchStaff();
+    }
+  }, [fetchStaff, isLoading, hasMore]);
 
   const columns = useMemo<TableColumn<(typeof staff)[0]>[]>(
     () => [
@@ -58,12 +76,8 @@ const StaffList: React.FC = () => {
     [formatRole, getStatusColor]
   );
 
-  if (loading) {
+  if (isLoading && staff.length === 0) {
     return <StaffListSkeleton />;
-  }
-
-  if (error) {
-    return <div className="text-center py-4 text-red-500">Error: {error}</div>;
   }
 
   if (staff.length === 0) {
@@ -71,12 +85,28 @@ const StaffList: React.FC = () => {
   }
 
   return (
-    <Table<StaffMember>
-      columns={columns}
-      data={staff}
-      keyExtractor={(item) => item.id}
-      onRowClick={navigateToStaffMember}
-    />
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Staff Members
+        </h2>
+        <input
+          type="text"
+          placeholder="Search staff..."
+          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+      <Table<StaffMember>
+        columns={columns}
+        data={filteredStaff}
+        keyExtractor={(item) => item.id}
+        onRowClick={navigateToStaffMember}
+        onEndReached={handleLoadMore}
+        isLoading={isLoading}
+      />
+    </div>
   );
 };
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, act } from "@testing-library/react";
+import { renderHook } from "@testing-library/react";
 import { useStaffData } from "../hooks/useStaffData";
 import { useStaff } from "../context/StaffContext";
 import { useParams } from "react-router-dom";
@@ -36,6 +36,8 @@ describe("useStaffData", () => {
       staff: mockStaff,
       loading: true,
       error: null,
+      currentPage: 1,
+      hasMore: true,
       fetchStaff: vi.fn(),
       editStaff: vi.fn(),
       createStaff: vi.fn(),
@@ -66,30 +68,5 @@ describe("useStaffData", () => {
     const staffMember = result.current.getStaffMemberById("1");
     expect(staffMember).toBeDefined();
     expect(staffMember?.id).toBe("1");
-  });
-
-  it("should handle staff member editing", async () => {
-    const mockEditStaff = vi.fn().mockResolvedValue(undefined);
-    vi.mocked(useStaff).mockReturnValue({
-      staff: mockStaff,
-      loading: false,
-      error: null,
-      fetchStaff: vi.fn(),
-      editStaff: mockEditStaff,
-      createStaff: vi.fn(),
-      removeStaff: vi.fn(),
-    });
-
-    const { result } = renderHook(() => useStaffData());
-    const editData = {
-      ...mockStaff[0],
-      firstName: "Jane",
-    };
-
-    await act(async () => {
-      await result.current.editStaff("1", editData);
-    });
-
-    expect(mockEditStaff).toHaveBeenCalledWith("1", editData);
   });
 });

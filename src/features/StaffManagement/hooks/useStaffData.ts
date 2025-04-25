@@ -1,36 +1,38 @@
-import { useEffect } from "react";
-import { useStaff } from "../context/StaffContext";
+import { useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { StaffMember } from "../types";
-import { StaffMemberFormData } from "../forms/schemas/staff";
+import { useStaff } from "../context/StaffContext";
 
 export const useStaffData = () => {
-  const { staff, fetchStaff, loading, error, editStaff } = useStaff();
   const { id } = useParams<{ id: string }>();
+  const { staff, loading, error, fetchStaff, currentPage, hasMore } =
+    useStaff();
 
-  useEffect(() => {
-    fetchStaff();
-  }, [fetchStaff]);
+  const currentStaffMember = id
+    ? staff.find((member) => member.id === id)
+    : undefined;
 
-  const getStaffMemberById = (id: string): StaffMember | undefined => {
-    return staff.find((member) => member.id === id);
-  };
+  const getStaffMemberById = useCallback(
+    (memberId: string) => {
+      return staff.find((member) => member.id === memberId);
+    },
+    [staff]
+  );
 
-  const getCurrentStaffMember = (): StaffMember | undefined => {
-    if (!id) return undefined;
-    return getStaffMemberById(id);
-  };
-
-  const handleEditStaff = async (id: string, data: StaffMemberFormData) => {
-    await editStaff(id, data);
-  };
+  const loadMore = useCallback(() => {
+    if (!loading && hasMore) {
+      fetchStaff(currentPage + 1);
+    }
+  }, [fetchStaff, loading, hasMore, currentPage]);
 
   return {
     staff,
     loading,
     error,
-    currentStaffMember: getCurrentStaffMember(),
+    currentStaffMember,
     getStaffMemberById,
-    editStaff: handleEditStaff,
+    fetchStaff: loadMore,
+    isLoading: loading,
+    hasMore,
   };
 };

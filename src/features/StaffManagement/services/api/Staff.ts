@@ -12,19 +12,31 @@ const API_ENDPOINTS = {
 };
 
 const handleApiError = (error: unknown): never => {
-  const appError = ApiErrorHandler.handleApiError(error);
-  throw appError;
+  console.error("API Error:", error);
+  throw error;
 };
 
 // Development mode API service
 const devApi = {
-  getStaff: async (): Promise<StaffMember[]> => {
-    try {
-      // Simulate API delay
+  getStaff: async (page: number = 1): Promise<StaffMember[]> => {
+    if (import.meta.env.DEV) {
+      // Add a small delay to show the skeleton loader
       await new Promise((resolve) => setTimeout(resolve, 500));
-      return mockStaff;
+      // Simulate pagination in dev mode
+      const start = (page - 1) * 10;
+      const end = start + 10;
+      return mockStaff.slice(start, end);
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/staff?page=${page}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch staff");
+      }
+      return await response.json();
     } catch (error) {
-      return handleApiError(error);
+      handleApiError(error);
+      return []; // Return empty array on error
     }
   },
 
@@ -88,12 +100,23 @@ const devApi = {
 
 // Production mode API service
 const prodApi = {
-  getStaff: async (): Promise<StaffMember[]> => {
+  getStaff: async (page: number = 1): Promise<StaffMember[]> => {
+    if (import.meta.env.DEV) {
+      // Simulate pagination in dev mode
+      const start = (page - 1) * 10;
+      const end = start + 10;
+      return mockStaff.slice(start, end);
+    }
+
     try {
-      const response = await axios.get(API_ENDPOINTS.STAFF);
-      return response.data;
+      const response = await fetch(`${API_BASE_URL}/staff?page=${page}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch staff");
+      }
+      return await response.json();
     } catch (error) {
-      return handleApiError(error);
+      handleApiError(error);
+      return []; // Return empty array on error
     }
   },
 
@@ -138,3 +161,81 @@ const prodApi = {
 
 // Export the appropriate API service based on environment
 export const staffApi = import.meta.env.DEV ? devApi : prodApi;
+
+export const getStaff = async (): Promise<StaffMember[]> => {
+  try {
+    const response = await fetch("/api/staff");
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
+export const getStaffMember = async (id: string): Promise<StaffMember> => {
+  try {
+    const response = await fetch(`/api/staff/${id}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
+export const createStaff = async (
+  staffMember: StaffMember
+): Promise<StaffMember> => {
+  try {
+    const response = await fetch("/api/staff", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(staffMember),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
+export const updateStaff = async (
+  id: string,
+  staffMember: StaffMember
+): Promise<StaffMember> => {
+  try {
+    const response = await fetch(`/api/staff/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(staffMember),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
+export const deleteStaff = async (id: string): Promise<void> => {
+  try {
+    const response = await fetch(`/api/staff/${id}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+  } catch (error) {
+    handleApiError(error);
+  }
+};

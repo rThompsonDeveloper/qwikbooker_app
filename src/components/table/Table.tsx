@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useRef, useEffect } from "react";
 import { FixedSizeList as List } from "react-window";
 
 export interface TableColumn<T> {
@@ -15,6 +15,8 @@ interface TableProps<T> {
   className?: string;
   onRowClick?: (item: T) => void;
   rowHeight?: number;
+  onEndReached?: () => void;
+  isLoading?: boolean;
 }
 
 const Table = <T,>({
@@ -24,11 +26,15 @@ const Table = <T,>({
   className = "",
   onRowClick,
   rowHeight = 72, // Default height for a row
+  onEndReached,
+  isLoading = false,
 }: TableProps<T>) => {
   const gridTemplateColumns = useMemo(
     () => `repeat(${columns.length}, 1fr)`,
     [columns.length]
   );
+
+  const hasReachedEndRef = useRef(false);
 
   const Row = ({
     index,
@@ -66,6 +72,23 @@ const Table = <T,>({
     );
   };
 
+  const handleItemsRendered = ({
+    visibleStopIndex,
+  }: {
+    visibleStopIndex: number;
+  }) => {
+    if (
+      visibleStopIndex === data.length - 1 &&
+      onEndReached &&
+      !hasReachedEndRef.current &&
+      !isLoading
+    ) {
+      hasReachedEndRef.current = true;
+      onEndReached();
+      setTimeout(() => (hasReachedEndRef.current = false), 1000);
+    }
+  };
+
   return (
     <div
       className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden ${className}`}
@@ -94,9 +117,17 @@ const Table = <T,>({
         itemCount={data.length}
         itemSize={rowHeight}
         width="100%"
+        onItemsRendered={handleItemsRendered}
       >
         {Row}
       </List>
+
+      {/* Loading Indicator */}
+      {isLoading && (
+        <div className="flex justify-center items-center p-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+        </div>
+      )}
     </div>
   );
 };

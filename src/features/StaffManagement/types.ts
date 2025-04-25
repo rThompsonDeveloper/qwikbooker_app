@@ -40,6 +40,7 @@ export enum StaffActionTypes {
   SET_LOADING = "SET_LOADING",
   SET_ERROR = "SET_ERROR",
   SET_STAFF = "SET_STAFF",
+  APPEND_STAFF = "APPEND_STAFF",
   ADD_STAFF = "ADD_STAFF",
   UPDATE_STAFF = "UPDATE_STAFF",
   DELETE_STAFF = "DELETE_STAFF",
@@ -49,20 +50,31 @@ export interface StaffState {
   staff: StaffMember[];
   loading: boolean;
   error: string | null;
+  currentPage: number;
+  hasMore: boolean;
 }
 
 export type StaffAction =
   | { type: StaffActionTypes.SET_LOADING; payload: boolean }
   | { type: StaffActionTypes.SET_ERROR; payload: string | null }
   | { type: StaffActionTypes.SET_STAFF; payload: StaffMember[] }
+  | {
+      type: StaffActionTypes.APPEND_STAFF;
+      payload: { staff: StaffMember[]; page: number };
+    }
   | { type: StaffActionTypes.ADD_STAFF; payload: StaffMember }
   | { type: StaffActionTypes.UPDATE_STAFF; payload: StaffMember }
   | { type: StaffActionTypes.DELETE_STAFF; payload: string };
 
 // Context Types
-export interface StaffContextType extends StaffState {
-  fetchStaff: () => Promise<void>;
+export interface StaffContextType {
+  staff: StaffMember[];
+  loading: boolean;
+  error: string | null;
+  currentPage: number;
+  hasMore: boolean;
+  fetchStaff: (page?: number) => Promise<void>;
   createStaff: (staff: Omit<StaffMember, "id">) => Promise<void>;
-  editStaff: (id: string, updates: Partial<StaffMember>) => Promise<void>;
+  editStaff: (id: string, staff: Partial<StaffMember>) => Promise<void>;
   removeStaff: (id: string) => Promise<void>;
 }
