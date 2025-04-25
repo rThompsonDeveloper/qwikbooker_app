@@ -73,7 +73,7 @@ const StaffList: React.FC = () => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h2 className="text-2xl text-gray-900 dark:text-white">
           Staff Members
         </h2>
         <input

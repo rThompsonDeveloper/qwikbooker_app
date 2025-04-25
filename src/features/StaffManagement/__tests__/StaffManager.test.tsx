@@ -3,7 +3,19 @@ import { render } from "@testing-library/react";
 import StaffManager from "../StaffManager";
 import { useStaffData } from "../hooks/useStaffData";
 import { useStaffNavigation } from "../hooks/useStaffNavigation";
-import { StaffMember } from "../context/StaffContext";
+import { StaffMember } from "../types";
+import StaffList from "../components/StaffList";
+
+// Mock react-router-dom
+vi.mock("react-router-dom", () => ({
+  Routes: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  Route: ({ element }: { element: React.ReactNode }) => element,
+  Outlet: () => <StaffList />,
+  useNavigate: () => vi.fn(),
+  useParams: () => ({}),
+}));
 
 // Mock the hooks and components
 vi.mock("../hooks/useStaffData");
@@ -46,6 +58,10 @@ describe("StaffManager", () => {
       currentStaffMember: mockStaffMember,
       getStaffMemberById: vi.fn(),
       editStaff: vi.fn(),
+      loadMore: vi.fn(),
+      search: vi.fn(),
+      isLoading: false,
+      hasMore: true,
     });
   });
 

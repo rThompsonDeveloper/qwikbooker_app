@@ -27,9 +27,7 @@ const StaffManager: React.FC = () => {
 
         {/* Content Area */}
         <div className="flex-1">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-            <StaffRoutes />
-          </div>
+          <StaffRoutes />
         </div>
       </div>
     </StaffProvider>
